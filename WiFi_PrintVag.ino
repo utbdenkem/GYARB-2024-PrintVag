@@ -139,9 +139,6 @@ void loop() {
       updateDisplay(weight);
     }
   }
-
-  // Add a small delay to avoid overwhelming the system with constant updates
-  delay(100);
 }
 
 // Function to handle "Calibration" button press
