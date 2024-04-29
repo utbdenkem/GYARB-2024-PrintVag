@@ -3,7 +3,7 @@
 #include <Adafruit_GFX.h>
 #include <Adafruit_ILI9341.h>
 #include <AdafruitIO_WiFi.h>
-#include <SPI.h>      
+#include <SPI.h>
 #include <TouchScreen.h>
 
 #define TFT_DC 15  // Define the pin for the TFT display data/command pin.
@@ -27,12 +27,12 @@
 
 #define IO_USERNAME "***"                  // Define the Adafruit IO username.
 #define IO_KEY "***"  // Define the Adafruit IO key.
-#define WIFI_SSID "***"       // Define the WiFi network SSID.
+#define WIFI_SSID "***       // Define the WiFi network SSID.
 #define WIFI_PASS "***"                     // Define the WiFi network password.
 
 AdafruitIO_WiFi io(IO_USERNAME, IO_KEY, WIFI_SSID, WIFI_PASS);  // Create an Adafruit IO instance.
 
-unsigned long dataConnectionTime = 0;                // Variable to store the last time data was sent.
+unsigned long dataConnectionTime = 0;                 // Variable to store the last time data was sent.
 const unsigned long dataConnectionInterval = 300000;  // Interval between sending data and connection retry.
 
 Adafruit_ILI9341 tft(TFT_CS, TFT_DC);  // Create a TFT display instance.
@@ -71,6 +71,7 @@ void setup() {
   connection();  // Connect to WiFi and Adafruit IO.
 
   // Draw initial buttons and display calibration factor
+  tareInstruction();                                // Print under the tare button instruction for how to tare
   drawButton(20, 210, 200, 40, "Tare/Empty Roll");  // Draw Tare button on screen.
   drawButton(20, 260, 200, 40, "Calibration");      // Draw Calibration button on screen.
   displayCalibrationFactor();                       // Display calibration factor on screen.
@@ -253,6 +254,8 @@ void switchToCalibrationUI() {
   uiSwitched = true;               // Set UI switch flag to true.
   displayUpdatesPaused = true;     // Pause display updates.
   clearScreen();                   // Clear TFT screen.
+  calibrationInstruction();        // Show the Calibration instructions.
+  clearScreen();                   // Clear TFT screen.
   drawBackButton();                // Draw back button on TFT screen.
   drawCalibrationButtons();        // Draw calibration buttons on TFT screen.
   drawCalibrationFactorDisplay();  // Draw calibration factor display on TFT screen.
@@ -264,10 +267,38 @@ void switchToNormalUI() {
   uiSwitched = false;                               // Set UI switch flag to false.
   displayUpdatesPaused = false;                     // Resume display updates.
   clearScreen();                                    // Clear TFT screen.
+  tareInstruction();                                // Print under the tare button instruction for how to tare
   drawButton(20, 210, 200, 40, "Tare/Empty Roll");  // Draw Tare button on TFT screen.
   drawButton(20, 260, 200, 40, "Calibration");      // Draw Calibration button on TFT screen.
   displayCalibrationFactor();                       // Display calibration factor on TFT screen.
   delay(100);                                       // Delay for stability.
+}
+
+// Function for showing calibration instruction
+void calibrationInstruction() {
+  tft.setTextSize(2);               // Set a smaller text size for better fit.
+  tft.setCursor(5, 90);             // Set cursor position for the first line
+  tft.print("Change the");          // First part of the first line
+  tft.setCursor(5, 110);            // Set cursor position for the second part of the first line
+  tft.print("calibration factor");  // Second part of the first line
+  tft.setCursor(5, 130);            // Set cursor position for the second line
+  tft.print("until the weight");    // Third part of the second line
+  tft.setCursor(5, 150);            // Set cursor position for the second part of the second line
+  tft.print("on the screen");       // Fourth part of the second line
+  tft.setCursor(5, 170);            // Set cursor position for the third line
+  tft.print("matches");           // Fifth part of the text
+  tft.setCursor(5, 190);            // Set cursor position for the third line
+  tft.print("500 gram");            // Sixth part of the text
+  delay(5000);                      // Time so that user can read the text
+}
+
+// Function for showing tare instruction
+void tareInstruction() {
+  tft.setTextSize(2);                          // Set a smaller text size for better fit.
+  tft.setCursor(25, 160);                       // Set cursor position for the instructions
+  tft.print("Place empty roll");  // First part of the first line
+  tft.setCursor(40, 180);                       // Set cursor position for the instructions
+  tft.print("before taring");                  // Second part of the second line
 }
 
 // Function to update and display weight in normal UI
@@ -339,10 +370,10 @@ void drawCalibrationFactorDisplay() {
 
 // Function to update and display the weight in normal interface
 void updateDisplay(long weight) {
-  tft.fillRect(0, 100, 230, 80, 0x0000);  // Clear area for weight display.
+  tft.fillRect(0, 80, 230, 60, 0x0000);  // Clear area for weight display.
   weight = (scale.get_units() * -1000);   // Get weight reading from HX711.
   tft.setTextSize(3);                     // Set text size for weight label.
-  tft.setCursor(65, 70);                  // Set cursor position for weight label.
+  tft.setCursor(65, 30);                  // Set cursor position for weight label.
   tft.print("Weight:");                   // Print weight label.
   String weightText = String(weight);     // Convert weight to string.
   tft.setTextSize(5);                     // Set text size for weight value.
@@ -350,7 +381,7 @@ void updateDisplay(long weight) {
   uint16_t w, h;
   tft.getTextBounds(weightText.c_str(), 0, 0, &x1, &y1, &w, &h);  // Get bounding box of weight value.
   int weightX = max(0, (tft.width() - w) / 2 - x1);               // Calculate x position for centering value.
-  tft.setCursor(weightX, 120);                                    // Set cursor position for weight value.
+  tft.setCursor(weightX, 80);                                    // Set cursor position for weight value.
   tft.print(weight);                                              // Print weight value.
   tft.println("g");                                               // Print unit (grams).
 }
@@ -373,7 +404,7 @@ void updateCalibrationDisplay(long weight) {
 void displayCalibrationFactor() {
   if (!uiSwitched) {                // If not in calibration UI mode.
     tft.setTextSize(1);             // Set text size for calibration factor.
-    tft.setCursor(110, 180);        // Set cursor position for calibration factor.
+    tft.setCursor(110, 140);        // Set cursor position for calibration factor.
     tft.print(calibration_factor);  // Print calibration factor.
   }
 }
